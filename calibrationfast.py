@@ -1,6 +1,13 @@
 import numpy as np
 import cv2
 import sys
+import json
+
+class NumpyAwareJSONEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        return json.JSONEncoder.default(self, obj)
 
 #parse arguments
 try:
@@ -66,7 +73,11 @@ objpoints = objpoints[:samples_to_use]
 imgpoints = imgpoints[:samples_to_use]
 ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, gray.shape[::-1],None,None)
 print 'calibration complete'
-print ret, mtx, dist, rvecs, tvecs
+print 'ret: %s' % ret
+print 'mtx: %s' % mtx
+print 'dist: %s' % dist
+print 'rvecs: %s' % rvecs
+print 'tvecs: %s' % tvecs
 
 mean_error = 0
 tot_error = 0
@@ -77,9 +88,22 @@ for i in xrange(len(objpoints)):
     print 'error: %f' % error
     tot_error = tot_error + error
 
-print "total error: %f" %  (float(tot_error)/float(samples_to_use))
+mean_error = (float(tot_error)/float(samples_to_use))
+print "total error: %f" %  mean_error
 
 cv2.destroyAllWindows()
+
+data = {'ret':ret, 'mtx':mtx, 'dist':dist, 'rvecs':rvecs, 'tvecs':tvecs, 'name':"iPhone 5", 'mean_error':mean_error}
+
+datastring = json.dumps(data, sort_keys=True, indent=4, separators=(',', ': '), cls=NumpyAwareJSONEncoder)
+
+print datastring
+
+fp = open(output_path, 'w')
+fp.write(datastring)
+fp.close()
+
+
 
 
 
