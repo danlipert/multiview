@@ -35,12 +35,18 @@ objpoints = [] # 3d point in real world space
 imgpoints = [] # 2d points in image plane.
 
 #load video
+print 'Loading video...'
 video = cv2.VideoCapture(video_path)
+total_frames = video.get(cv2.cv.CV_CAP_PROP_FRAME_COUNT)
 lastgray = None
 
 samples_to_use = 50
+frame_count = 0
 
 while(video.isOpened()):
+    frame_count = frame_count + 1
+    print 'Reading frame %s of %s' % (frame_count, total_frames)
+    
     flag, img = video.read()
 
     try:
@@ -50,6 +56,7 @@ while(video.isOpened()):
     lastgray = gray
     
     # Find the chess board corners
+    print 'finding chessboard'
     ret, corners = cv2.findChessboardCorners(gray, (9,6),None)
 
     # If found, add object points, image points (after refining them)
